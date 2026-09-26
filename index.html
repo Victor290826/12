@@ -22,7 +22,6 @@
             text-align: center;
             margin: 0;
             padding: 15px;
-
             background: radial-gradient(circle at center, #ffffff 0%, #fff0f3 50%, #ff4d6d 100%);
             background-attachment: fixed;
         }
@@ -31,6 +30,7 @@
             max-width: 450px;
             margin: 0 auto;
             padding: 20px;
+            box-sizing: border-box;
         }
         .tela {
             display: none;
@@ -118,7 +118,6 @@
         .btn-anterior:hover, .btn-proximo:hover {
             background-color: var(--cor-destaque);
         }
-
         .preco-prato {
             color: var(--cor-destaque);
             font-size: 1.4rem;
@@ -159,7 +158,6 @@
         .btn-remover-item:hover {
             background-color: var(--cor-destaque);
         }
-
         .campo-reserva {
             display: flex;
             flex-direction: column;
@@ -171,16 +169,6 @@
             font-weight: bold;
             color: var(--cor-texto);
             font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-        .grupo-reserva {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
         }
         .select-reserva, .input-num {
             padding: 10px;
@@ -190,9 +178,8 @@
             color: var(--cor-texto);
             background-color: #fff;
             box-sizing: border-box;
+            width: 100%;
         }
-        .input-pequeno { width: 80px; }
-        .input-medio { width: 105px; }
         .input-grande { width: 100%; }
     </style>
 </head>
@@ -426,58 +413,44 @@
             </div>
         </div>
 
-        <!-- Tela de Reservas -->
+        <!-- TELA DE RESERVAS -->
         <div id="tela-reservas" class="tela">
             <button class="btn-voltar" onclick="voltarPagina()">Voltar</button>
             <h2 class="card-titulo">Reservas</h2>
             <p class="card-desc">Faça sua reserva para eventos!</p>
 
-            <div class="card-menu" style="cursor: default;">
-                <form onsubmit="confirmarReserva(event)">
+            <div class="card-menu" style="cursor: default; text-align: left;">
+                <form id="form-reserva" onsubmit="enviarReserva(event)">
+                    <!-- Data -->
                     <div class="campo-reserva">
-                        <label>Data da Reserva:</label>
-                        <div class="grupo-reserva">
-                            <select id="reserva-dia" class="select-reserva input-pequeno" required>
-                                <option value="01">01</option><option value="15">15</option><option value="25" selected>25</option>
-                            </select>
-                            <select id="reserva-mes" class="select-reserva input-medio" required>
-                                <option value="09" selected>Setembro</option>
-                                <option value="10">Outubro</option>
-                            </select>
-                            <select id="reserva-ano" class="select-reserva input-medio" required>
-                                <option value="2026" selected>2026</option>
-                            </select>
-                        </div>
+                        <label for="reserva-data">Data da Reserva:*</label>
+                        <input type="date" id="reserva-data" class="select-reserva" required>
                     </div>
 
+                    <!-- Horário -->
                     <div class="campo-reserva">
-                        <label>Horário da Reserva:</label>
-                        <div class="grupo-reserva">
-                            <select id="reserva-hora" class="select-reserva input-medio" required>
-                                <option value="12">12:00</option>
-                                <option value="19" selected>19:00</option>
-                                <option value="20">20:00</option>
-                            </select>
-                            <select id="reserva-minuto" class="select-reserva input-medio" required>
-                                <option value="00" selected>:00 min</option>
-                                <option value="30">:30 min</option>
-                            </select>
-                        </div>
+                        <label for="reserva-hora">Horário da Reserva:*</label>
+                        <input type="time" id="reserva-hora" class="select-reserva" required>
                     </div>
 
+                    <!-- Pessoas -->
                     <div class="campo-reserva">
-                        <label>Quantidade de Pessoas:</label>
-                        <select id="reserva-pessoas" class="select-reserva input-grande" required>
-                            <option value="2" selected>2 Pessoas</option>
-                            <option value="4">4 Pessoas</option>
-                            <option value="6">6 Pessoas</option>
+                        <label for="reserva-pessoas">Quantidade de Pessoas:*</label>
+                        <select id="reserva-pessoas" class="select-reserva" required>
+                            <option value="1 Pessoa">1 Pessoa</option>
+                            <option value="2 Pessoas" selected>2 Pessoas</option>
+                            <option value="3 Pessoas">3 Pessoas</option>
+                            <option value="4 Pessoas">4 Pessoas</option>
+                            <option value="5 Pessoas">5 Pessoas</option>
+                            <option value="6+ Pessoas">6+ Pessoas</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-add-carrinho" style="width: 100%; margin-top: 15px;">Confirmar Reserva</button>
+                    <button type="submit" class="btn-add-carrinho" style="width: 100%; margin-top: 15px;">
+                        Confirmar Reserva
+                    </button>
                 </form>
-
-                <div id="mensagem-reserva" style="margin-top: 15px; font-weight: bold; color: var(--cor-destaque);"></div>
+                <div id="mensagem-reserva" style="margin-top: 15px;"></div>
             </div>
         </div>
 
@@ -495,7 +468,7 @@
         <div id="tela-contato" class="tela">
             <button class="btn-voltar" onclick="voltarPagina()">Voltar</button>
             <h2 class="card-titulo">Contato</h2>
-            <div class="card-menu">
+            <div class="card-menu" style="cursor: default;">
                 <p class="card-desc">Email: contato@restaurante.com</p>
                 <p class="card-desc">Telefone: (11) 1234-5678</p>
             </div>
@@ -653,19 +626,32 @@
                     atualizarCarrinho();
                 } else alert("Erro: " + resultado.mensagem);
             } catch (e) {
-                alert("Erro ao conectar com o servidor! Garanta que o 'node server.js' está a rodar.");
+                alert("Erro ao conectar com o servidor! Garanta que o servidor está a rodar.");
             }
         }
 
-        async function confirmarReserva(event) {
+        async function enviarReserva(event) {
             event.preventDefault();
+
+            const dataVal = document.getElementById('reserva-data').value;
+            const horaVal = document.getElementById('reserva-hora').value;
+            const pessoas = document.getElementById('reserva-pessoas').value;
+
+            if (!dataVal || !horaVal) {
+                alert("Por favor, preencha a data e o horário!");
+                return;
+            }
+
+            const [ano, mes, dia] = dataVal.split('-');
+            const [hora, minuto] = horaVal.split(':');
+
             const dadosReserva = {
-                dia: document.getElementById('reserva-dia').value,
-                mes: document.getElementById('reserva-mes').value,
-                ano: document.getElementById('reserva-ano').value,
-                hora: document.getElementById('reserva-hora').value,
-                minuto: document.getElementById('reserva-minuto').value,
-                pessoas: document.getElementById('reserva-pessoas').value
+                dia,
+                mes,
+                ano,
+                hora,
+                minuto,
+                pessoas
             };
 
             try {
@@ -677,16 +663,22 @@
                 const resultado = await resposta.json();
 
                 if (resultado.sucesso) {
-                    document.getElementById('mensagem-reserva').innerHTML = `✅ Reserva #${resultado.reserva.id} Confirmada para ${dadosReserva.dia}/${dadosReserva.mes}/${dadosReserva.ano} às ${dadosReserva.hora}:${dadosReserva.minuto}!`;
+                    document.getElementById('mensagem-reserva').innerHTML = `
+                        <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--cor-destaque); margin-top:15px;">
+                            <p style="color:var(--cor-destaque); font-weight:bold; font-size:1.1rem; margin:0;">✅ Reserva #${resultado.reserva ? resultado.reserva.id : ''} Confirmada!</p>
+                            <p style="font-size:0.95rem; margin:5px 0 0 0; color:var(--cor-texto);">Data: ${dia}/${mes}/${ano} às ${hora}:${minuto}<br>Quantidade: ${pessoas}</p>
+                        </div>`;
+                    document.getElementById('form-reserva').reset();
+                } else {
+                    alert("Erro ao realizar reserva.");
                 }
             } catch (e) {
-                alert("Erro ao conectar ao servidor.");
+                alert("Erro ao conectar com o servidor.");
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            history.replaceState({ tela: 'tela-menu' }, '', '#tela-menu');
-            inicializarSlides(document.getElementById('tela-menu'));
+            abrirTela('tela-menu', false);
         });
     </script>
 </body>

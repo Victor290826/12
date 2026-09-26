@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // Configurações do servidor
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve os arquivos do site (index.html, imagens, etc)
+app.use(express.static(__dirname)); // Serve os arquivos do site (index.html, imagens, etc.)
 
 // Banco de dados em memória (listas temporárias)
 let listaDePedidos = [];
@@ -23,8 +23,13 @@ let contadorReservas = 5000;
 app.post('/api/pedidos', (req, res) => {
     const { endereco, itens, pagamento, total } = req.body;
 
-    if (!itens || itens.length === 0) {
+    // Validação básica de entrada
+    if (!itens || !Array.isArray(itens) || itens.length === 0) {
         return res.status(400).json({ sucesso: false, mensagem: "O carrinho está vazio!" });
+    }
+
+    if (!endereco || !endereco.rua || !endereco.numero || !endereco.bairro) {
+        return res.status(400).json({ sucesso: false, mensagem: "Endereço incompleto!" });
     }
 
     contadorPedidos++;
@@ -33,8 +38,8 @@ app.post('/api/pedidos', (req, res) => {
         dataHora: new Date().toLocaleString('pt-BR'),
         endereco,
         itens,
-        pagamento,
-        total,
+        pagamento: pagamento || { forma: "Não informada", troco: null },
+        total: Number(total) || 0,
         status: "Pendente"
     };
 
@@ -43,16 +48,16 @@ app.post('/api/pedidos', (req, res) => {
     // Formata a lista de itens e troco para o terminal
     const resumoItens = itens.map(item => `   • ${item.nome} (R$ ${Number(item.preco).toFixed(2)})`).join('\n');
     const infoTroco = pagamento && pagamento.troco ? ` (Troco para R$ ${pagamento.troco})` : '';
-    const infoComplemento = endereco && endereco.complemento ? ` (${endereco.complemento})` : '';
+    const infoComplemento = endereco.complemento ? ` (${endereco.complemento})` : '';
 
-    // Mostra o pedido detalhado no terminal do VS Code e nos Logs do Render
+    // Logs no terminal / Render
     console.log("\n==========================================");
     console.log(`🍔 NOVO PEDIDO RECEBIDO! ID: #${novoPedido.id}`);
     console.log(`⏰ Data/Hora: ${novoPedido.dataHora}`);
     console.log(`📍 Endereço: ${endereco.rua}, Nº ${endereco.numero} - ${endereco.bairro}${infoComplemento}`);
     console.log(`🛒 ITENS DO PEDIDO:\n${resumoItens}`);
-    console.log(`💳 Pagamento: ${pagamento.forma}${infoTroco}`);
-    console.log(`💵 Total: R$ ${Number(total).toFixed(2)}`);
+    console.log(`💳 Pagamento: ${novoPedido.pagamento.forma}${infoTroco}`);
+    console.log(`💵 Total: R$ ${novoPedido.total.toFixed(2)}`);
     console.log("==========================================\n");
 
     res.status(201).json({
@@ -75,12 +80,16 @@ app.get('/api/pedidos', (req, res) => {
 app.post('/api/reservas', (req, res) => {
     const { dia, mes, ano, hora, minuto, pessoas } = req.body;
 
+    if (!dia || !mes || !ano || !hora || !minuto) {
+        return res.status(400).json({ sucesso: false, mensagem: "Dados de data e horário incompletos!" });
+    }
+
     contadorReservas++;
     const novaReserva = {
         id: contadorReservas,
         dataReserva: `${dia}/${mes}/${ano}`,
         horario: `${hora}:${minuto}`,
-        pessoas: pessoas,
+        pessoas: pessoas || "1 Pessoa",
         dataCriacao: new Date().toLocaleString('pt-BR')
     };
 
